@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plano Alimentar — Wanessa</title>
+    <style>
+        :root {
+            --bg-body: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --accent: #10b981;
+            --accent-hover: #059669;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border-color: #334155;
+            --shadow-lg: 0 10px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-primary);
+            line-height: 1.7;
+            font-size: 19px;
+            padding: 40px 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            text-align: center;
+            margin-bottom: 48px;
+            padding: 36px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow-lg);
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            color: var(--accent);
+            margin-bottom: 0px;
+            letter-spacing: -0.5px;
+        }
+
+        header p {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+        }
+
+        /* Grid de Refeições Web */
+        .grid-meals {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+            gap: 28px;
+            margin-bottom: 40px;
+        }
+
+        /* Card de Refeição */
+        .meal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+        }
+
+        .meal-card:hover {
+            transform: translateY(-6px);
+            border-color: var(--accent);
+            background: var(--bg-card-hover);
+        }
+
+        .meal-card.completed {
+            opacity: 0.5;
+            filter: grayscale(0.6);
+        }
+
+        .meal-card-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .meal-card-content {
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+            text-align: center;
+        }
+
+        .meal-time-tag {
+            align-self: center;
+            background: rgba(16, 185, 129, 0.15);
+            color: var(--accent);
+            font-weight: 700;
+            font-size: 1.05rem;
+            padding: 6px 16px;
+            border-radius: 20px;
+            margin-bottom: 14px;
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .meal-card h3 {
+            font-size: 1.6rem;
+            margin-bottom: 16px;
+            color: #fff;
+        }
+
+        .options-preview {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            flex-grow: 1;
+            line-height: 1.6;
+        }
+
+        .btn-open {
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s ease;
+            text-align: center;
+            width: 100%;
+        }
+
+        .btn-open:hover {
+            background: var(--accent-hover);
+        }
+
+        /* Guia de Preparo Banner */
+        .prep-banner {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 2px dashed var(--accent);
+            border-radius: 20px;
+            padding: 36px;
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .prep-banner h2 {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 12px;
+        }
+
+        .prep-banner p {
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+            font-size: 1.2rem;
+        }
+
+        /* Modal Web para Detalhes */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.88);
+            backdrop-filter: blur(8px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            max-width: 750px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            animation: modalIn 0.3s ease-out;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-img {
+            width: 100%;
+            height: 240px;
+            object-fit: cover;
+        }
+
+        .modal-header-text {
+            padding: 28px 32px 16px;
+            text-align: center;
+        }
+
+        .modal-header-text h2 {
+            font-size: 2rem;
+            color: #fff;
+        }
+
+        .modal-body {
+            padding: 0 32px 32px;
+        }
+
+        /* Estilo das Opções Centralizadas com Texto Maior */
+        .option-box {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .option-box h4 {
+            color: var(--accent);
+            font-size: 1.35rem;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .option-box p {
+            font-size: 1.25rem;
+            color: var(--text-primary);
+            line-height: 1.8;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: rgba(0, 0, 0, 0.6);
+            color: #fff;
+            border: none;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            font-size: 1.3rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .close-btn:hover {
+            background: var(--accent);
+        }
+
+        .btn-check-modal {
+            width: 100%;
+            padding: 18px;
+            border-radius: 14px;
+            border: none;
+            background: var(--accent);
+            color: #fff;
+            font-size: 1.2rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        .btn-check-modal.checked {
+            background: #475569;
+        }
+
+        footer {
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            padding: 20px 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <header>
+            <h1>Plano de Alimentação</h1>
+            <p>Acompanhamento Diário</p>
+        </header>
+
+        <!-- Grid de Cards de Refeição -->
+        <div class="grid-meals">
+            
+            <!-- Café da Manhã -->
+            <div class="meal-card" id="card-meal1" onclick="openModal('meal1')">
+                <img src="https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=800&q=80" alt="Café da Manhã" class="meal-card-img">
+                <div class="meal-card-content">
+                    <span class="meal-time-tag">⏰ 08:30</span>
+                    <h3>🌅 Café da Manhã</h3>
+                    <p class="options-preview">
+                        • Iogurte com aveia e mamão<br>
+                        • Vitamina proteica com morangos<br>
+                        • Tapioca com queijo cottage
+                    </p>
+                    <button class="btn-open">Ver 3 Opções</button>
+                </div>
+            </div>
+
+            <!-- Lanche da Manhã -->
+            <div class="meal-card" id="card-meal2" onclick="openModal('meal2')">
+                <img src="https://images.unsplash.com/photo-1606851094655-b2593a9af63f?auto=format&fit=crop&w=800&q=80" alt="Lanche da Manhã" class="meal-card-img">
+                <div class="meal-card-content">
+                    <span class="meal-time-tag">⏰ 11:00</span>
+                    <h3>🍎 Lanche da Manhã</h3>
+                    <p class="options-preview">
+                        • Whey Protein com maçã<br>
+                        • Iogurte proteico com banana<br>
+                        • Mix de castanhas com chá gelado
+                    </p>
+                    <button class="btn-open">Ver 3 Opções</button>
+                </div>
+            </div>
+
+            <!-- Almoço -->
+            <div class="meal-card" id="card-meal3" onclick="openModal('meal3')">
+                <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80" alt="Almoço" class="meal-card-img">
+                <div class="meal-card-content">
+                    <span class="meal-time-tag">⏰ 12:30</span>
+                    <h3>🍛 Almoço</h3>
+                    <p class="options-preview">
+                        • Arroz integral, feijão e frango<br>
+                        • Macarrão integral com carne moída<br>
+                        • Purê de abóbora com peixe
+                    </p>
+                    <button class="btn-open">Ver 3 Opções</button>
+                </div>
+            </div>
+
+            <!-- Lanche da Tarde -->
+            <div class="meal-card" id="card-meal4" onclick="openModal('meal4')">
+                <img src="https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=800&q=80" alt="Lanche da Tarde" class="meal-card-img">
+                <div class="meal-card-content">
+                    <span class="meal-time-tag">⏰ 16:00</span>
+                    <h3>🥚 Lanche da Tarde</h3>
+                    <p class="options-preview">
+                        • Ovos mexidos com pão integral<br>
+                        • Panqueca de banana com aveia<br>
+                        • Omelete com queijo branco
+                    </p>
+                    <button class="btn-open">Ver 3 Opções</button>
+                </div>
+            </div>
+
+            <!-- Jantar -->
+            <div class="meal-card" id="card-meal5" onclick="openModal('meal5')">
+                <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80" alt="Jantar" class="meal-card-img">
+                <div class="meal-card-content">
+                    <span class="meal-time-tag">⏰ 19:30</span>
+                    <h3>🌙 Jantar</h3>
+                    <p class="options-preview">
+                        • Salada completa com frango desfiado<br>
+                        • Sopa de legumes com carne magra<br>
+                        • Abobrinha recheada gratinada
+                    </p>
+                    <button class="btn-open">Ver 3 Opções</button>
+                </div>
+            </div>
+
+            <!-- Ceia -->
+            <div class="meal-card" id="card-meal6" onclick="openModal('meal6')">
+                <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=800&q=80" alt="Ceia" class="meal-card-img">
+                <div class="meal-card-content">
+                    <span class="meal-time-tag">⏰ 22:00</span>
+                    <h3>💤 Ceia (Opcional)</h3>
+                    <p class="options-preview">
+                        • Gelatina zero<br>
+                        • Queijo branco em fatias<br>
+                        • Chá de camomila com castanhas
+                    </p>
+                    <button class="btn-open">Ver 3 Opções</button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Banner do Guia de Preparo -->
+        <div class="prep-banner">
+            <h2>🥩 Guia de Proteínas & Substituições</h2>
+            <p>Porções corretas de carnes (100g a 120g) e guia de complementos.</p>
+            <button class="btn-open" style="max-width: 400px; margin: 0 auto;" onclick="openModal('guide')">Abrir Guia de Preparo</button>
+        </div>
+
+        <footer>
+            <p>Foco e constância, Wanessa! 💪✨</p>
+        </footer>
+    </div>
+
+    <!-- ESTRUTURA DOS MODAIS -->
+
+    <!-- Modal Café da Manhã -->
+    <div class="modal-overlay" id="modal-meal1">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('meal1')">✕</button>
+            <img src="https://images.unsplash.com/photo-1533089860892-a7c6f0a88666?auto=format&fit=crop&w=800&q=80" class="modal-img" alt="Café da Manhã">
+            <div class="modal-header-text">
+                <h2>🌅 Café da Manhã (08:30)</h2>
+            </div>
+            <div class="modal-body">
+                <div class="option-box">
+                    <h4>🥣 OPÇÃO 1</h4>
+                    <p>
+                        1 Pote de iogurte natural<br>
+                        + 2 colheres (sopa) de aveia<br>
+                        + 1 fatia de mamão<br>
+                        + 1 fatia de pão integral com queijo minas<br>
+                        <em>(com uma pitada de sal para a pressão)</em>
+                    </p>
+                </div>
+                <div class="option-box">
+                    <h4>🍓 OPÇÃO 2</h4>
+                    <p>
+                        Vitamina:<br>1 scoop de Whey + leite desnatado + morangos<br>
+                        + 2 torradas integrais com ricota temperada
+                    </p>
+                </div>
+                <div class="option-box">
+                    <h4>🌮 OPÇÃO 3</h4>
+                    <p>
+                        1 Tapioca pequena (3 colheres)<br>
+                        recheada com queijo cottage e orégano<br>
+                        + Café ou chá <em>(ajuda a elevar a pressão)</em>
+                    </p>
+                </div>
+                <button class="btn-check-modal" id="btn-check-meal1" onclick="toggleComplete('meal1')">Concluir Refeição</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Lanche da Manhã -->
+    <div class="modal-overlay" id="modal-meal2">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('meal2')">✕</button>
+            <img src="https://images.unsplash.com/photo-1606851094655-b2593a9af63f?auto=format&fit=crop&w=800&q=80" class="modal-img" alt="Lanche da Manhã">
+            <div class="modal-header-text">
+                <h2>🍎 Lanche da Manhã (11:00)</h2>
+            </div>
+            <div class="modal-body">
+                <div class="option-box">
+                    <h4>🥤 OPÇÃO 1</h4>
+                    <p>
+                        1 scoop de Whey Protein (batido com água)<br>
+                        + 1 Maçã
+                    </p>
+                </div>
+                <div class="option-box">
+                    <h4>🍌 OPÇÃO 2</h4>
+                    <p>
+                        1 Iogurte proteico<br>
+                        + 1 Banana prata
+                    </p>
+                </div>
+                <div class="option-box">
+                    <h4>🥜 OPÇÃO 3</h4>
+                    <p>
+                        Mix de castanhas (30g - approx. 1 punhado)<br>
+                        + Chá gelado sem açúcar
+                    </p>
+                </div>
+                <button class="btn-check-modal" id="btn-check-meal2" onclick="toggleComplete('meal2')">Concluir Refeição</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Almoço -->
+    <div class="modal-overlay" id="modal-meal3">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('meal3')">✕</button>
+            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?auto=format&fit=crop&w=800&q=80" class="modal-img" alt="Almoço">
+            <div class="modal-header-text">
+                <h2>🍛 Almoço (12:30)</h2>
+            </div>
+            <div class="modal-body">
+                <div class="option-box">
+                    <h4>🥗 OPÇÃO 1</h4>
+                    <p>
+                        3 colheres (sopa) de arroz integral<br>
+                        + 2 colheres (sopa) de feijão<br>
+                        + 1 filé de frango grelhado<br>
+                        + Salada verde + Legumes no vapor
+                    </p>
+                </div>
+                <div class="option-box">
+                    <h4>🍝 OPÇÃO 2</h4>
+                    <p>
+                        1 pegador de macarrão integral<br>
+                        + Carne moída magra com molho caseiro<br>
+                        + Salada de rúcula com tomate
+                    </p>
+                </div>
+                <div class="option-box">
+                    <h4>🍠 OPÇÃO 3</h4>
+                    <p>
+                        Purê de abóbora ou batata doce (3 colheres)<br>
+                        + 1 filé de peixe assado<br>
+                        + Brócolis e couve-flor refogados
+                    </p>
+                </div>
+                <button class="btn-check-modal" id="btn-check-meal3" onclick="toggleComplete('meal3')">Concluir Refeição</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Lanche da Tarde -->
+    <div class="modal-overlay" id="modal-meal4">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('meal4')">✕</button>
+            <img src="https://images.unsplash.com/photo-1525351484163-7529414344d8?auto=format&fit=crop&w=800&q=80" class="modal-img" alt="Lanche da Tarde">
+            <div class="modal-header-text">
+                <h2>🥚 Lanche da Tarde (16:00)</h2>
+            </div>
+            <div class="modal-body">
+                <div class="option-box">
+                    <h4>🍳 OPÇÃO 1</h4>
+                    <p>
+                        2 ovos mexidos<br>
+                        + 1 fatia de pão integral<br>
+                        + Café preto
+                    </p>
+                </div>
+                <div class="option-box">
+                    <h4>🥞 OPÇÃO 2</h4>
+                    <p>
+                        Panqueca de banana:<br>
+                        1 ovo + 1 banana + 1 colher de aveia<br>
+                        + Chá quente ou gelado
+                    </p>
+                </div>
+                <div class="option-box">
+                    <h4>🥚 OPÇÃO 3</h4>
+                    <p>
+                        Omelete de 2 ovos com queijo branco e espinafre<br>
+                        + 2 torradas integrais
+                    </p>
+                </div>
+                <button class="btn-check-modal" id="btn-check-meal4" onclick="toggleComplete('meal4')">Concluir Refeição</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Jantar -->
+    <div class="modal-overlay" id="modal-meal5">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('meal5')">✕</button>
+            <img src="https://images.unsplash.com/photo-1512621776951-a57141f2eefd?auto=format&fit=crop&w=800&q=80" class="modal-img" alt="Jantar">
+            <div class="modal-header-text">
+                <h2>🌙 Jantar (19:30)</h2>
+            </div>
+            <div class="modal-body">
+                <div class="option-box">
+                    <h4>🥗 OPÇÃO 1</h4>
+                    <p>
+                        Salada completa à vontade<br>
+                        + Peito de frango desfiado<br>
+                        + 1 colher (sopa) de azeite extra virgem
+                    </p>
+                </div>
+                <div class="option-box">
+                    <h4>🍲 OPÇÃO 2</h4>
+                    <p>
+                        Sopa de legumes<br>
+                        com cubos de carne magra (patinho)
+                    </p>
+                </div>
+                <div class="option-box">
+                    <h4>🍆 OPÇÃO 3</h4>
+                    <p>
+                        Berinjela ou abobrinha recheada com carne moída<br>
+                        e gratinada com um pouco de queijo
+                    </p>
+                </div>
+                <button class="btn-check-modal" id="btn-check-meal5" onclick="toggleComplete('meal5')">Concluir Refeição</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Ceia -->
+    <div class="modal-overlay" id="modal-meal6">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('meal6')">✕</button>
+            <img src="https://images.unsplash.com/photo-1511920170033-f8396924c348?auto=format&fit=crop&w=800&q=80" class="modal-img" alt="Ceia">
+            <div class="modal-header-text">
+                <h2>💤 Ceia (22:00)</h2>
+            </div>
+            <div class="modal-body">
+                <div class="option-box">
+                    <h4>🍮 OPÇÃO 1</h4>
+                    <p>1 taça pequena de gelatina zero</p>
+                </div>
+                <div class="option-box">
+                    <h4>🧀 OPÇÃO 2</h4>
+                    <p>1 fatia média de queijo branco</p>
+                </div>
+                <div class="option-box">
+                    <h4>🍵 OPÇÃO 3</h4>
+                    <p>
+                        Chá de camomila ou erva-doce<br>
+                        + 2 castanhas-do-pará
+                    </p>
+                </div>
+                <button class="btn-check-modal" id="btn-check-meal6" onclick="toggleComplete('meal6')">Concluir Refeição</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Guia -->
+    <div class="modal-overlay" id="modal-guide">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('guide')">✕</button>
+            <div class="modal-header-text">
+                <h2>🥩 Área de Preparo & Guia</h2>
+            </div>
+            <div class="modal-body">
+                <div class="option-box">
+                    <h4>🍗 Carnes Magras (100g a 120g)</h4>
+                    <p>
+                        • <strong>Aves:</strong> Peito de frango, Sobrecoxa sem pele<br>
+                        • <strong>Bovinos:</strong> Patinho, Mignon, Lagarto, Alcatra<br>
+                        • <strong>Peixes:</strong> Tilápia, Pescada, Salmão<br>
+                        • <strong>Suínos:</strong> Lombo ou Filé mignon suíno
+                    </p>
+                </div>
+                <div class="option-box">
+                    <h4>🥦 Carboidratos & Complementos</h4>
+                    <p>
+                        • <strong>Carboidratos (3-4 colheres):</strong> Arroz, Batatas, Mandioca, Abóbora, Macarrão<br>
+                        • <strong>Leguminosas (2 colheres):</strong> Feijão, Lentilha, Grão de bico<br>
+                        • <strong>Verduras (Livre):</strong> Alface, rúcula, tomate, brócolis, couve, etc.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openModal(id) {
+            document.getElementById('modal-' + id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById('modal-' + id).classList.remove('active');
+        }
+
+        function toggleComplete(id) {
+            const card = document.getElementById('card-' + id);
+            const btn = document.getElementById('btn-check-' + id);
+            
+            card.classList.toggle('completed');
+            btn.classList.toggle('checked');
+
+            if (btn.classList.contains('checked')) {
+                btn.innerHTML = '✓ Refeição Concluída';
+            } else {
+                btn.innerHTML = 'Concluir Refeição';
+            }
+            closeModal(id);
+        }
+
+        // Fechar modal ao clicar fora
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal-overlay')) {
+                event.target.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
